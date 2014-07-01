@@ -133,11 +133,12 @@ var Winner = function(game){};
             this.currentTimer.loop(Phaser.Timer.SECOND, this.updateTimer, this);
             this.currentTimer.start();
 
-			// Allow hero to jump (Spacebar and mouse/touch)
+			//Jump button
+            //This will be removed when JQuery calls are implemented
 			this.jumpKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-			this.jumpKey.onDown.add(this.heroJump, this.hero);
+			this.jumpKey.onDown.add(this.correctAnswer, this.hero);
         	this.wrongKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-            this.wrongKey.onDown.add(this.heroWrong, this.hero);
+            this.wrongKey.onDown.add(this.incorrectAnswer, this.hero);
 
 			// Add a pause button
 			this.btnPause = this.game.add.button(20, 20, 'btnPause', this.pauseGame, this);
@@ -174,7 +175,8 @@ var Winner = function(game){};
             console.log(counter);
 
     },
-		heroJump: function(){
+
+		correctAnswer: function(){
 			if(!paused){
 				// Change hero velocity if touching the ground
 				if(this.body.touching.down){
@@ -185,7 +187,7 @@ var Winner = function(game){};
 			}
 		},
         
-        heroWrong: function(){
+        incorrectAnswer: function(){
 			if(!paused){
 				if(this.body.touching.down){
                     this.animations.play('wrong');
@@ -218,9 +220,8 @@ var Winner = function(game){};
 
 			}
 		},
+        //this will be replaced by a JQuery call once the game recognizes that it has been won.
     startClick: function() {
-      // start button click handler
-      // start the 'play' state
       this.game.state.start('winner');
     },
 
