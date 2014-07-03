@@ -2,61 +2,120 @@ window.onload = function(){
 
 	// Pause flag
 	var paused = true;
+    var counter=0;
 
+
+    
 //menu state
 var Menu = function(game){};  
   Menu.prototype = {
     preload: function() {
         this.load.image('firstaid', 'assets/firstaid.png');
+        this.load.spritesheet('background', 'assets/start.png',800,400);
+        this.load.spritesheet('textbg','assets/textbg.png',486,512);
+
     },
     create: function() {
+        // Reponsive and centered canvas
+			this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+            this.scale.minWidth = 320;
+			this.scale.minHeight = 200;
+			this.scale.maxWidth = 720;
+			this.scale.maxHeight = 480;
+
+			this.scale.pageAlignHorizontally = true;
+			this.scale.pageAlignVertically = true;
+
+			this.scale.setScreenSize(true);
+        
         console.log('Menu has started');
         
       //creates ground and starts scrolling it
-      this.ground = this.game.add.tileSprite(0,400, 335,112,'ground');
-      this.ground.autoScroll(-200,0);
+      this.background = this.game.add.image(-5, -15,'background');
+      this.textbg = this.game.add.sprite(this.game.width/5,-this.game.height,'textbg');
 
-      // adds the start button
-      this.startButton = this.game.add.button(this.game.width/2, 300, 'firstaid', this.startClick, this);
-      this.startButton.anchor.setTo(0.5,0.5);
+      this.game.physics.arcade.enableBody(this.textbg);
+      this.textbg.body.allowGravity = false;
     },
     startClick: function() {
       // start the 'gameplay' state
       this.game.state.start('gameplay');
+    },
+    update: function() {
+        this.textbg.body.velocity.y=100;
+    if (this.textbg.position.y>-60){
+      this.textbg.body.velocity.y = 0;
+      this.startButton = this.game.add.button(this.game.width/2,this.game.height/2,'firstaid',this.startClick,this);
+      this.startButton.anchor.setTo(0.5,0.5);   
+        startText = game.add.text(-80+this.game.width/2,50+this.game.height/2, 'Click to play!', { font: "32px Arial", fill: "#000000", align: "middle" });
+        }
     }
   };
   
+
+    
+    
 //winner state
 var Winner = function(game){};  
   Winner.prototype = {
     preload: function() {
- 
+         this.load.image('win', 'assets/win.png');
+
     },
     create: function() {
         console.log('Win Game has started');
         console.log(counter);
       // add the ground sprite as a tile
       // and start scrolling in the negative x direction
-      this.ground = this.game.add.tileSprite(0,400, 335,112,'ground');
-      this.ground.autoScroll(-200,0);
-
+      this.win = this.game.add.image(-5, -15,'win');
+      this.lilypad1 = game.add.sprite(100,200,'lilypad');
+      this.lilypad2 = game.add.sprite(250,150,'lilypad');
+      this.lilypad1.scale.setTo(1.5,1.5);
+      this.lilypad2.scale.setTo(1.5,1.5);
+      this.hero = game.add.sprite(90, 80, 'hero');
+      this.hero.animations.add('right',[6,7,8],15,false);
+      this.hero.animations.play('right');
+      this.game.physics.arcade.enableBody(this.hero);
+      this.hero.body.allowGravity = true;
+      this.hero.body.velocity.y -= 900;
+      this.hero.body.velocity.x = 50;
+      this.game.physics.arcade.enableBody(this.lilypad2);
+      this.lilypad2.body.immovable = true;
+      this.lilypad2.body.allowGravity = false;
+      this.hero.pivot.x = -3;
+      this.hero.pivot.y = 00;
+      endText = game.add.text(-120+this.game.width/2,100+this.game.height/2, 'Congratulations!', { font: "32px Arial", fill: "#ffffff", align: "middle" });
+    },
+    update:function(){
+    this.hero.rotation +=0.0;
+    if(this.hero.body.blocked.down)
+    {
+        this.hero.body.velocity.x=0;    
+        this.hero.animations.stop;
+        this.hero.frame=0;
+        console.log('animationstop')
+    }
+    this.game.physics.arcade.collide(this.hero, this.lilypad2);
     }
   };
 
-	var gameplay = function(game){};
-
+    
+    
+    
+    
+//Gameplay state
+var gameplay = function(game){};
 	gameplay.prototype = {
 		preload: function(){
 			// Load assets
-			this.load.image('ground', 'assets/ground.png');
+			this.load.image('ground', 'assets/ground1.png');
             this.load.spritesheet('bird', 'assets/bird.png',38,40);
 			this.load.image('btnPause', 'assets/btn-pause.png');
 			this.load.image('btnPlay', 'assets/btn-play.png');
 			this.load.image('panel', 'assets/panel.png');
             this.load.spritesheet('hero', 'assets/leapfrog.png', 165, 225);
             this.load.spritesheet('fish', 'assets/fish.png',200,100);
-
-
+            this.load.spritesheet('lilypad', 'assets/lilypad.png', 171, 64);
 		},
 
 		create: function(){
@@ -80,7 +139,6 @@ var Winner = function(game){};
 
 			this.scale.setScreenSize(true);
 
-
 			// Change stage background color
 			this.game.stage.backgroundColor = '#d0f4f7';
 
@@ -95,7 +153,6 @@ var Winner = function(game){};
 			this.ground.body.allowGravity = false;
 
 			// Add some moving birds
-
     	this.birds = game.add.group();
 			for(var i=0; i<3; i++){
 				var bird = this.game.add.sprite(this.game.rnd.integerInRange(0, this.game.width), this.game.rnd.integerInRange(0, 50), 'bird');
@@ -115,8 +172,7 @@ var Winner = function(game){};
 			}
 
 			// Add hero
-			this.hero = this.game.add.sprite(180, 60, 'hero');
-			this.hero.anchor.setTo(0.5, 0.5);
+			this.hero = this.game.add.sprite(80, 0, 'hero');
             this.hero.animations.add('wrong',[33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58],15,false);
             this.hero.animations.add('right',[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],15,false);		
             this.hero.frame=0;
@@ -128,8 +184,7 @@ var Winner = function(game){};
             fish.animations.play('jump')
             
             //start timer
-            counter=0;
-            this.currentTimer = game.time.create(false);
+            this.currentTimer = this.game.time.create(false);
             this.currentTimer.loop(Phaser.Timer.SECOND, this.updateTimer, this);
             this.currentTimer.start();
 
@@ -152,12 +207,17 @@ var Winner = function(game){};
 		},
 
 		update: function(){
-        if(this.hero.body.touching.down && jumpKey.isUp)
+        if(!paused && this.hero.body.touching.down && this.wrongKey.isUp)
     {
-        this.hero.body.velocity.x=0;    
-        this.hero.frame=0;
+        this.hero.body.velocity.x=0;
+        this.hero.body.velocity.y=0;    
         this.hero.animations.stop;
+        this.hero.frame=0;
+        console.log('animationstop')
     }
+        if(this.hero.body.touching.down){
+            this.ground.autoScroll(0, 0);
+        }
 			// Revive dead birds
         this.birds.forEachDead(function(bird){
         bird.body.velocity.x = this.game.rnd.integerInRange(150, 200);
@@ -167,21 +227,18 @@ var Winner = function(game){};
 
 			// Collisions between hero and ground
 			this.game.physics.arcade.collide(this.hero, this.ground);
-            
 		},
     
         updateTimer: function() {
             counter++;
             console.log(counter);
-
     },
 
 		correctAnswer: function(){
 			if(!paused){
-				// Change hero velocity if touching the ground
+	8			// Change hero velocity if touching the ground
 				if(this.body.touching.down){
 				    this.body.velocity.y -= 500;
-                    this.body.velocity.x = 20;
                     this.animations.play('right');
                     }
 			}
@@ -191,11 +248,13 @@ var Winner = function(game){};
 			if(!paused){
 				if(this.body.touching.down){
                     this.animations.play('wrong');
-                    this.body.velocity.x=0;
                 }
 			}
 		},
-
+        //this will be replaced by a JQuery call once the game recognizes that it has been won.
+    startClick: function() {
+      this.game.state.start('winner');
+    },
 		pauseGame: function(){
 			if(!paused){
 				// Enter pause
@@ -220,11 +279,6 @@ var Winner = function(game){};
 
 			}
 		},
-        //this will be replaced by a JQuery call once the game recognizes that it has been won.
-    startClick: function() {
-      this.game.state.start('winner');
-    },
-
 		playGame: function(){
 			if(paused){
 				// Leaving pause
@@ -232,18 +286,17 @@ var Winner = function(game){};
 				this.pausePanel.hide();
 
 				// Anim ground
-				this.ground.autoScroll(-100, 0);
+				this.ground.autoScroll(-200, 0);
 
-				// play the runing animation of the hero
-				this.hero.animations.currentAnim.paused = false;
-				
-				// Activate hero gravity
-				this.game.physics.arcade.enableBody(this.hero);
+				// Activate hero gravity				
+                this.game.physics.arcade.enableBody(this.hero);
 				this.hero.body.allowGravity = true;
 				this.hero.body.velocity.y = this.heroVelocityY;
                 
                 //continue the timer
+                if (this.currentTimer.paused == true){
                 this.currentTimer.resume();
+                }
 
 
 			}
@@ -281,9 +334,9 @@ var Winner = function(game){};
 	};
 
 	// Create game state and start phaser
-	var game = new Phaser.Game(480, 320, Phaser.AUTO, 'game');
+	var game = new Phaser.Game(605, 385, Phaser.AUTO, 'game');
     game.state.add('menu', Menu);
 	game.state.add('gameplay', gameplay);
     game.state.add('winner', Winner);
 	game.state.start('menu');
-};
+}
