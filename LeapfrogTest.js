@@ -147,7 +147,7 @@ var gameplay = function(game){};
 			this.game.physics.arcade.gravity.y = 1200;
 
 			// Add a scrolling ground
-			this.ground = this.game.add.tileSprite(0, 250, 480, 70, 'ground');
+			this.ground = this.game.add.tileSprite(0, 250, 605, 70, 'ground');
 			this.game.physics.arcade.enableBody(this.ground);
 			this.ground.body.immovable = true;
 			this.ground.body.allowGravity = false;
@@ -172,11 +172,12 @@ var gameplay = function(game){};
 			}
 
 			// Add hero
-			this.hero = this.game.add.sprite(80, 0, 'hero');
+			this.hero = this.game.add.sprite(100, -410, 'hero');
             this.hero.animations.add('wrong',[33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58],15,false);
-            this.hero.animations.add('right',[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],15,false);		
+            this.hero.animations.add('right',[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],25,false);		
             this.hero.frame=0;
 			this.heroVelocityY = 0;
+            
             
             //add fish
             fish = game.add.sprite(200,200,'fish');
@@ -207,17 +208,6 @@ var gameplay = function(game){};
 		},
 
 		update: function(){
-        if(!paused && this.hero.body.touching.down && this.wrongKey.isUp)
-    {
-        this.hero.body.velocity.x=0;
-        this.hero.body.velocity.y=0;    
-        this.hero.animations.stop;
-        this.hero.frame=0;
-        console.log('animationstop')
-    }
-        if(this.hero.body.touching.down){
-            this.ground.autoScroll(0, 0);
-        }
 			// Revive dead birds
         this.birds.forEachDead(function(bird){
         bird.body.velocity.x = this.game.rnd.integerInRange(150, 200);
@@ -227,6 +217,19 @@ var gameplay = function(game){};
 
 			// Collisions between hero and ground
 			this.game.physics.arcade.collide(this.hero, this.ground);
+        if(!paused && this.hero.body.touching.down && this.wrongKey.isUp)
+    {
+        this.hero.body.velocity.y=0;    
+        this.hero.animations.stop;
+        this.hero.frame=0;
+        console.log('animationstop')
+    }
+        if(!paused && this.hero.body.touching.down){
+            this.ground.autoScroll(0, 0);
+        }
+            else{
+                this.ground.autoScroll(-382.5, 0);
+            }
 		},
     
         updateTimer: function() {
@@ -238,7 +241,7 @@ var gameplay = function(game){};
 			if(!paused){
 	8			// Change hero velocity if touching the ground
 				if(this.body.touching.down){
-				    this.body.velocity.y -= 500;
+				    this.body.velocity.y = -650;
                     this.animations.play('right');
                     }
 			}
@@ -285,13 +288,12 @@ var gameplay = function(game){};
 				paused = false;
 				this.pausePanel.hide();
 
-				// Anim ground
-				this.ground.autoScroll(-200, 0);
-
 				// Activate hero gravity				
                 this.game.physics.arcade.enableBody(this.hero);
 				this.hero.body.allowGravity = true;
 				this.hero.body.velocity.y = this.heroVelocityY;
+                this.hero.body.setSize(220, 180, 0, 0);
+
                 
                 //continue the timer
                 if (this.currentTimer.paused == true){
