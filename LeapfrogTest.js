@@ -3,6 +3,7 @@ window.onload = function(){
 	// Pause flag
 	var paused = true;
     var counter=0;
+    var minute=0;
 
 
     
@@ -42,7 +43,7 @@ var Menu = function(game){};
       this.game.state.start('gameplay');
     },
     update: function() {
-        this.textbg.body.velocity.y=100;
+        this.textbg.body.velocity.y=300;
     if (this.textbg.position.y>-60){
       this.textbg.body.velocity.y = 0;
       this.startButton = this.game.add.button(this.game.width/2,this.game.height/2,'firstaid',this.startClick,this);
@@ -68,34 +69,34 @@ var Winner = function(game){};
       // add the ground sprite as a tile
       // and start scrolling in the negative x direction
       this.win = this.game.add.image(-5, -15,'win');
-      this.lilypad1 = game.add.sprite(100,200,'lilypad');
-      this.lilypad2 = game.add.sprite(250,150,'lilypad');
+      this.lilypad1 = game.add.sprite(10,200,'lilypad');
+      this.lilypad2 = game.add.sprite(220,120,'lilypad');
       this.lilypad1.scale.setTo(1.5,1.5);
       this.lilypad2.scale.setTo(1.5,1.5);
       this.hero = game.add.sprite(90, 80, 'hero');
-      this.hero.animations.add('right',[6,7,8],15,false);
+      this.hero.animations.add('right',[6],15,false);
       this.hero.animations.play('right');
       this.game.physics.arcade.enableBody(this.hero);
       this.hero.body.allowGravity = true;
       this.hero.body.velocity.y -= 900;
-      this.hero.body.velocity.x = 50;
+      this.hero.body.velocity.x = 150;
       this.game.physics.arcade.enableBody(this.lilypad2);
       this.lilypad2.body.immovable = true;
       this.lilypad2.body.allowGravity = false;
-      this.hero.pivot.x = -3;
-      this.hero.pivot.y = 00;
+      this.hero.body.setSize(165,155);
+      //this.hero.pivot.x = 0;
+      //this.hero.pivot.y = 0;
       endText = game.add.text(-120+this.game.width/2,100+this.game.height/2, 'Congratulations!', { font: "32px Arial", fill: "#ffffff", align: "middle" });
     },
     update:function(){
-    this.hero.rotation +=0.0;
-    if(this.hero.body.blocked.down)
+    this.game.physics.arcade.collide(this.hero, this.lilypad2);
+    //this.hero.rotation +=0.0;
+    if(this.hero.body.touching.down)
     {
-        this.hero.body.velocity.x=0;    
+        this.hero.body.velocity.x=00;    
         this.hero.animations.stop;
         this.hero.frame=0;
-        console.log('animationstop')
     }
-    this.game.physics.arcade.collide(this.hero, this.lilypad2);
     }
   };
 
@@ -108,6 +109,7 @@ var gameplay = function(game){};
 	gameplay.prototype = {
 		preload: function(){
 			// Load assets
+            this.load.image('background', 'assets/gameplay.png');
 			this.load.image('ground', 'assets/ground1.png');
             this.load.spritesheet('bird', 'assets/bird.png',38,40);
 			this.load.image('btnPause', 'assets/btn-pause.png');
@@ -116,6 +118,7 @@ var gameplay = function(game){};
             this.load.spritesheet('hero', 'assets/leapfrog.png', 165, 225);
             this.load.spritesheet('fish', 'assets/fish.png',200,100);
             this.load.spritesheet('lilypad', 'assets/lilypad.png', 171, 64);
+            this.load.spritesheet('timer', 'assets/timer.png', 256, 256);
 		},
 
 		create: function(){
@@ -145,12 +148,9 @@ var gameplay = function(game){};
 			// Enable arcade physics
 			this.game.physics.startSystem(Phaser.Physics.ARCADE);
 			this.game.physics.arcade.gravity.y = 1200;
-
-			// Add a scrolling ground
-			this.ground = this.game.add.tileSprite(0, 250, 605, 70, 'ground');
-			this.game.physics.arcade.enableBody(this.ground);
-			this.ground.body.immovable = true;
-			this.ground.body.allowGravity = false;
+            
+            //add background
+            this.background = this.game.add.sprite(0, 0, 'background');
 
 			// Add some moving birds
     	this.birds = game.add.group();
@@ -171,17 +171,40 @@ var gameplay = function(game){};
 			     bird.animations.play('left');
 			}
 
+            //add lilypads
+        	this.lilys = game.add.group();
+            this.lilypad1 = this.game.add.sprite(50, this.game.rnd.integerInRange(200, 250), 'lilypad');
+            this.lilypad2 = this.game.add.sprite(450, this.game.rnd.integerInRange(200, 250), 'lilypad');
+            this.lilypad1.scale.setTo(1.5,1.5);
+            this.lilypad2.scale.setTo(1.5,1.5);
+            this.lilys.add(this.lilypad1);
+            this.lilys.add(this.lilypad2);
+            this.game.physics.arcade.enableBody(this.lilypad1);
+            this.lilypad1.body.immovable = true;
+            this.lilypad1.body.allowGravity = false;
+            this.game.physics.arcade.enableBody(this.lilypad2);
+            this.lilypad2.body.immovable = true;
+            this.lilypad2.body.allowGravity = false;
+            
+            // Kill the lilys when out of bounds
+				this.lilys.checkWorldBounds = true;
+   				this.lilys.outOfBoundsKill = true;
+
 			// Add hero
-			this.hero = this.game.add.sprite(100, -410, 'hero');
+			this.hero = this.game.add.sprite(75, -100, 'hero');
             this.hero.animations.add('wrong',[33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58],15,false);
-            this.hero.animations.add('right',[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],25,false);		
+            this.hero.animations.add('right',[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],40,false);		
             this.hero.frame=0;
 			this.heroVelocityY = 0;
             
+            //add timer
+            this.timerImage = this.game.add.sprite(25, 275, 'timer');
+            timerText = game.add.text(40,320, '0:00', { font: "20px Arial", fill: "#000000", align: "middle" });
+            
             
             //add fish
-            fish = game.add.sprite(200,200,'fish');
-            fish.animations.add('jump',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27],7,true);
+            fish = game.add.sprite(200,75,'fish');
+            fish.animations.add('jump',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27],20,true);
             fish.animations.play('jump')
             
             //start timer
@@ -197,7 +220,7 @@ var gameplay = function(game){};
             this.wrongKey.onDown.add(this.incorrectAnswer, this.hero);
 
 			// Add a pause button
-			this.btnPause = this.game.add.button(20, 20, 'btnPause', this.pauseGame, this);
+			//this.btnPause = this.game.add.button(20, 20, 'btnPause', this.pauseGame, this);
 
 			// Let's build a pause panel
 			this.pausePanel = new PausePanel(this.game);
@@ -205,43 +228,68 @@ var gameplay = function(game){};
 
 			// Enter play mode
 			this.playGame();
+            this.hero.body.setSize(165,155);
+
 		},
 
 		update: function(){
+            console.log(this.hero.animations.currentFrame.index);
+            // Collisions between hero and ground
+            this.game.physics.arcade.collide(this.hero, this.lilypad1);
+            this.game.physics.arcade.collide(this.hero, this.lilypad2);
 			// Revive dead birds
         this.birds.forEachDead(function(bird){
         bird.body.velocity.x = this.game.rnd.integerInRange(150, 200);
 				bird.revive();
 				bird.x = this.game.width + bird.width/2;
 			}, this);
+            
+            // Revive dead lilypads
+            if(this.lilypad1.x<-171){
+				this.lilypad1.body.x = 629;
+                this.lilypad1.body.y = this.game.rnd.integerInRange(200, 250);
+            }
+            if(this.lilypad2.x<-171){
+				this.lilypad2.body.x = 629;
+                this.lilypad2.body.y = this.game.rnd.integerInRange(200, 250);
+            }
 
-			// Collisions between hero and ground
-			this.game.physics.arcade.collide(this.hero, this.ground);
         if(!paused && this.hero.body.touching.down && this.wrongKey.isUp)
     {
         this.hero.body.velocity.y=0;    
         this.hero.animations.stop;
         this.hero.frame=0;
-        console.log('animationstop')
     }
-        if(!paused && this.hero.body.touching.down){
-            this.ground.autoScroll(0, 0);
+        if(!paused && this.hero.animations.currentFrame.index == 0 || this.hero.animations.currentFrame.index == 32){
+            this.lilypad1.body.velocity.x=0;
+            this.lilypad2.body.velocity.x=0;
+
         }
             else{
-                this.ground.autoScroll(-382.5, 0);
+                this.lilypad1.body.velocity.x=-645;
+                this.lilypad2.body.velocity.x=-645;
             }
 		},
     
         updateTimer: function() {
             counter++;
-            console.log(counter);
+            if(counter==60){
+                minute++;
+                counter=0;
+            }
+            if (counter<10){
+            timerText.setText(minute+':0'+counter);
+            }
+            else{
+                timerText.setText(minute+':'+counter);
+            }
     },
 
 		correctAnswer: function(){
 			if(!paused){
 	8			// Change hero velocity if touching the ground
 				if(this.body.touching.down){
-				    this.body.velocity.y = -650;
+				    this.body.velocity.y = -500;
                     this.animations.play('right');
                     }
 			}
@@ -315,10 +363,10 @@ var gameplay = function(game){};
 		this.panel.anchor.setTo(0.5, 0);
 
 		// Add play button
-		this.btnPlay = this.game.add.button(20, 20, 'btnPlay', function(){
-        this.game.state.getCurrentState().playGame()}
-		, this);
-		this.add(this.btnPlay);
+		//this.btnPlay = this.game.add.button(20, 20, 'btnPlay', function(){
+        //this.game.state.getCurrentState().playGame()}
+		//, this);
+		//this.add(this.btnPlay);
 
 		// Place it out of bounds
 		this.x = 0;
@@ -336,7 +384,7 @@ var gameplay = function(game){};
 	};
 
 	// Create game state and start phaser
-	var game = new Phaser.Game(605, 385, Phaser.AUTO, 'game');
+	var game = new Phaser.Game(600, 385, Phaser.AUTO, 'game');
     game.state.add('menu', Menu);
 	game.state.add('gameplay', gameplay);
     game.state.add('winner', Winner);

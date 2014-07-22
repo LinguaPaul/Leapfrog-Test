@@ -1,20 +1,54 @@
 <!doctype html> 
 <html lang="en"> 
-<head> 
-	<meta charset="UTF-8" />
-	<title>Phaser - Platformer with Camera</title>
-	<script type="text/javascript" src="js/phaser.min.js"></script>
-    <style type="text/css">
-        body {
-            margin: 0;
-        }
-    </style>
-</head>
-<body>
-
-<script type="text/JavaScript" src="LeapfrogTest.js"></script> 
-
-</script>
-
-</body>
+	<head> 
+		<meta charset="UTF-8" />
+		<title>Leapfrog Demo</title>
+		<script type="text/javascript" src="js/phaser.min.js"></script>
+		<script type="text/javascript" src="LeapfrogTest.js"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script type="text/javascript">
+		$(function() {
+			
+			var nodes;
+			
+			// Load XML
+			$.get("gamedata/leapFrog.xml", function(data) {
+				nodes = $(data).find("gamedata").children();
+				$.each(nodes, function(index, elem) {
+                $(elem).find("question").attr("content");
+                    console.log($(elem).find("question").attr("content"));				});
+			});
+			
+			// Capture submit event from form, pass into the evaluate function in textinputgame.js
+			$("#userResponse").on("submit", function(e) {
+				var answer = $("#userTextResponse").val();
+				evaluate(answer);
+				$("#userTextResponse").val("");
+				e.preventDefault();
+			});
+		});
+		</script>
+	
+	    <style type="text/css">
+	        body {
+	            margin: 0;
+	        }
+			form#userResponse {
+				position: absolute;
+				left: 280px;
+				top: 20px;
+			}
+			form#userResponse > input {
+				padding: 10px;
+				font-size: 1.25em;
+			}
+			
+	    </style>
+	</head>
+	<body>
+		<form id="userResponse">
+			<input id="userTextResponse" type="text" />
+			<input type="submit" />
+		</form>
+	</body>
 </html>
