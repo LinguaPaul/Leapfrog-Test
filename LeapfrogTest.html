@@ -12,21 +12,27 @@
 			var nodes;
 			
 			// Load XML
-			$.get("gamedata/leapFrog.xml", function(data) {
+			$.get("gamedata/test.xml", function(data) {
 				nodes = $(data).find("gamedata").children();
 				$.each(nodes, function(index, elem) {
                 $(elem).find("question").attr("content");
-                    console.log($(elem).find("question").attr("content"));				});
+                var $correct = $(elem).find("question").attr("content");
+                console.log($correct);				});
 			});
 			
-			// Capture submit event from form, pass into the evaluate function in textinputgame.js
+			// Capture submit event from form, pass into the evaluate function in leapfrogtest.js
 			$("#userResponse").on("submit", function(e) {
-				var answer = $("#userTextResponse").val();
-				evaluate(answer);
+				var $answer = $("#userTextResponse").val();
+                if($answer.is($correct) ==true){
+                    correctAnswer();
+                }
+                else{
+                    incorrectAnswer();
+                    }
 				$("#userTextResponse").val("");
 				e.preventDefault();
 			});
-		});
+		}); 
 		</script>
 	
 	    <style type="text/css">
